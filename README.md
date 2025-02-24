@@ -34,12 +34,12 @@ Para saber que esta dentro do ambiente virtual, verificar no inicio da linha de 
 
 8) Criar os modelos em models.py
    Adicionar a aplicação no projeto
-   settings.py >> Installed apps >> polls.apps.PollsConfig
-   python manage.py makemigrations polls
+   settings.py >> Installed apps >> pfsj.apps.PfsjConfig
+   python manage.py makemigrations pfsj
       Cria or arquivos de migração
       Precisa incluir no settings pois apenas os aplicativos que estao la é que sao considerados.
 
-9) python manage.py sqlmigrate polls 0001
+9) python manage.py sqlmigrate pfsj 0001
    Apenas EXIBE o SQL da migration selecionada.
    python manage.py migrate >> Para rodar a migration no banco.
 
@@ -47,7 +47,7 @@ https://docs.djangoproject.com/pt-br/5.1/intro/tutorial02/#creating-an-admin-use
 
 10) Criar um usuario para acessar a area de administração
     python manage.py createsuperuser
-    admin   admin@admin.com    123    (usuario e-mail pwd ...)
+    admin   svisentini@gmail.com    pfsjadm123    (usuario e-mail pwd ...)
 
 11) Para que o objeto Question apareca na pagina de adminstração, precisamos informar
     admin.py >> from .models import Question >> admin.site.register(Question)
