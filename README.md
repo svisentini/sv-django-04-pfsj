@@ -23,7 +23,7 @@ Para saber que esta dentro do ambiente virtual, verificar no inicio da linha de 
 5) Criar um APP -- Aplicação(deve estar com o Ambiente Virtual ativo)
     python manage.py startapp polls
 
-==> Criação do ambiente <==
+<<==== Criação do ambiente ===>
 
 6) Settings.py >> Arquivo com configurações do Projeto.
    LANGUAGE_CODE = 'pt-br'
@@ -49,10 +49,54 @@ https://docs.djangoproject.com/pt-br/5.1/intro/tutorial02/#creating-an-admin-use
     python manage.py createsuperuser
     admin   svisentini@gmail.com    pfsjadm123    (usuario e-mail pwd ...)
 
-11) Para que o objeto Question apareca na pagina de adminstração, precisamos informar
-    admin.py >> from .models import Question >> admin.site.register(Question)
+11) Para que o objeto "Joia" apareca na pagina de adminstração, precisamos informar
+    admin.py >> from .models import Joia >> admin.site.register(Question)
 
 https://docs.djangoproject.com/pt-br/5.1/intro/tutorial03/#writing-more-views
+
+<<==== Publicar o projeto no Render ===>
+
+Preparação do Projeto para produção:
+- settings.py >> defina DEBUG=False (True é usado na etapa de desenvolvimento apenas)
+- Configure ALLOWED_HOSTS para incluir o domínio que você usará (por exemplo, ['*'] para permitir qualquer domínio temporariamente).
+- Configure o STATIC_URL e STATIC_ROOT para servir arquivos estáticos.
+- Crie um arquivo com as dependencias do Projeto
+    pip freeze > requirements.txt
+- Um arquivo Procfile (para definir o comando de execução do servidor).
+    Exemplo de Procfile:
+    web: gunicorn seu_projeto.wsgi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
