@@ -66,6 +66,55 @@ Preparação do Projeto para produção:
     Exemplo de Procfile:
     web: gunicorn seu_projeto.wsgi
 
+Coletar arquivos estáticos
+Se você estiver usando o Django Admin, os arquivos estáticos já estão incluídos no pacote do Django. 
+No entanto, você pode garantir que eles estejam disponíveis rodando o comando:
+"python manage.py collectstatic"
+Isso copia todos os arquivos estáticos para a pasta definida em STATIC_ROOT 
+
+Rodar o projeto visivel na rede interna:
+python manage.py runserver 0.0.0.0:8000
+
+
+<<==== Utilizando cloudinary para servir os arquivos estaticos===>
+pip install django-cloudinary-storage
+
+No arquivo settings.py, adicione as configurações do Cloudinary e defina-o como armazenamento de arquivos estáticos.
+
+import cloudinary
+import cloudinary_storage
+
+# Configurações do Cloudinary
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'seu_cloud_name',  # Substitua pelo seu cloud_name
+    'API_KEY': 'sua_api_key',        # Substitua pela sua api_key
+    'API_SECRET': 'sua_api_secret',   # Substitua pela sua api_secret
+}
+
+# Defina o Cloudinary como armazenamento de arquivos estáticos
+STATIC_URL = '/static/'
+STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
+
+Colete os arquivos estáticos:
+Rode o comando para coletar os arquivos estáticos e enviá-los para o Cloudinary:
+python manage.py collectstatic
+Isso enviará todos os arquivos estáticos (incluindo os do Django Admin) para o Cloudinary.
+
+<<==== Utilizando um serviço de armazenamento das imagens ===>
+
+https://cloudinary.com/
+
+-  Instale a biblioteca do Cloudinary para Django
+pip install cloudinary django-cloudinary-storage
+
+settings.py
+# Configurações de mídia (imagens)
+MEDIA_URL = '/media/'  # URL base para servir arquivos de mídia
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+
+
+
 
 
 
