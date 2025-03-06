@@ -79,10 +79,6 @@ python manage.py runserver 0.0.0.0:8000
 <<==== Utilizando cloudinary para servir os arquivos estaticos===>
 pip install django-cloudinary-storage
 
-cloud_name=dvjhvmmke
-api_key=194411469979958
-api_secret=7iyyKBTD4add2Yv_y-OVofdKJEQ
-
 No arquivo settings.py, adicione as configurações do Cloudinary e defina-o como armazenamento de arquivos estáticos.
 
 import cloudinary
@@ -107,12 +103,14 @@ Isso enviará todos os arquivos estáticos (incluindo os do Django Admin) para o
 <<==== Utilizando um serviço de armazenamento das imagens ===>
 
 https://cloudinary.com/
-svisentini@gmail.com
-SVcloudinary1!
 
 -  Instale a biblioteca do Cloudinary para Django
 pip install cloudinary django-cloudinary-storage
 
+settings.py
+# Configurações de mídia (imagens)
+MEDIA_URL = '/media/'  # URL base para servir arquivos de mídia
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 
 
