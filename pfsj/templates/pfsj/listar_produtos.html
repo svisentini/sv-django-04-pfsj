@@ -42,7 +42,22 @@
   </head>
   <body class="bg-light">
 
+    <!-- ============================================================================================ -->
+    <!-- Exibe as mensagens -->
+    <!-- ============================================================================================ -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill text-success{% elif message.tags == 'error' %}bi-x-circle-fill text-danger{% else %}bi-info-circle-fill text-primary{% endif %}"></i>
+                    <span class="ms-2">{{ message }}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
+    <!-- ============================================================================================ -->
 
     <div class="container mt-4">
         <h2 class="text-center mb-4">Catálogo de Semijoias</h2>
@@ -100,10 +115,13 @@
                                         <i class="bi bi-pencil"></i> <!-- Ícone de edição do Bootstrap Icons -->
                                     </a>
                                     <!-- Botão de Excluir -->
-                                    <a href="#" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
-                                       data-joia-id="{{ joia.id }}"
-                                       data-joia-codigo="{{ joia.codigo }}"
-                                       data-joia-descricao="{{ joia.descricao }}">
+                                    <a href="#" class="btn btn-sm btn-outline-danger"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#confirmDeleteModal"
+                                       data-id="{{ joia.id }}"
+                                       data-codigo="{{ joia.codigo }}"
+                                       data-descricao="{{ joia.descricao }}"
+                                       data-preco="{{ joia.preco_venda }}">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 </div>
@@ -192,53 +210,48 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Tem certeza que deseja excluir esta joia?</p>
-                    <p><strong>Código:</strong> <span id="joiaCodigo"></span></p>
-                    <p><strong>Descrição:</strong> <span id="joiaDescricao"></span></p>
+                    <p>Tem certeza de que deseja excluir esta joia?</p>
+                    <p><strong>Código:</strong> <span id="modalCodigo"></span></p>
+                    <p><strong>Descrição:</strong> <span id="modalDescricao"></span></p>
+                    <p><strong>Preço:</strong> R$ <span id="modalPreco"></span></p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteButton">Excluir</button>
+                    <form id="deleteForm" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Excluir</button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
 
+
     <!-- ============================================================================================ -->
-
+    <!-- Script de Exclusão de Joias -->
+    <!-- ============================================================================================ -->
     <script>
-    // Quando a modal é aberta, preencha os dados da joia
-    document.getElementById('confirmDeleteModal').addEventListener('show.bs.modal', function (event) {
-        const button = event.relatedTarget; // Botão que acionou a modal
-        const joiaId = button.getAttribute('data-joia-id');
-        const joiaCodigo = button.getAttribute('data-joia-codigo');
-        const joiaDescricao = button.getAttribute('data-joia-descricao');
+        document.addEventListener("DOMContentLoaded", function () {
+            var confirmDeleteModal = document.getElementById("confirmDeleteModal");
+            confirmDeleteModal.addEventListener("show.bs.modal", function (event) {
+                var button = event.relatedTarget;
+                var id = button.getAttribute("data-id");
+                var codigo = button.getAttribute("data-codigo");
+                var descricao = button.getAttribute("data-descricao");
+                var preco = button.getAttribute("data-preco");
 
-        // Preenche os dados na modal
-        document.getElementById('joiaCodigo').textContent = joiaCodigo;
-        document.getElementById('joiaDescricao').textContent = joiaDescricao;
+                document.getElementById("modalCodigo").textContent = codigo;
+                document.getElementById("modalDescricao").textContent = descricao;
+                document.getElementById("modalPreco").textContent = preco;
 
-        // Configura o botão de exclusão para enviar o ID da joia
-        const confirmDeleteButton = document.getElementById('confirmDeleteButton');
-        confirmDeleteButton.onclick = function () {
-            fetch(`/pfsj/excluir_joia/${joiaId}/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}', // Adiciona o token CSRF
-                    'Content-Type': 'application/json'
-                }
-            }).then(response => {
-                if (response.ok) {
-                    // Recarrega a página após a exclusão
-                    window.location.reload();
-                } else {
-                    alert('Erro ao excluir a joia.');
-                }
+                var form = document.getElementById("deleteForm");
+                form.action = "/pfsj/joias/excluir/" + id + "/";
             });
-        };
-    });
+        });
     </script>
+
+    <!-- ============================================================================================ -->
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

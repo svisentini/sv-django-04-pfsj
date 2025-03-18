@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
@@ -41,8 +42,14 @@ def cadastrar_joia(request):
 
     return render(request, 'pfsj/cadastro_joia.html', {'form': form})
 
-@require_POST
-def excluir_joia(request, joia_id):
-    joia = get_object_or_404(Joia, id=joia_id)
-    joia.delete()
-    return JsonResponse({'status':'success'})
+
+def excluir_joia(request, id):
+    joia = get_object_or_404(Joia, id=id)
+
+    if request.method == "POST":
+        joia.delete()
+        messages.success(request, "Joia excluída com sucesso!")
+        return redirect("listaJoias")
+
+    messages.error(request, "Erro ao excluir a joia.")
+    return redirect("listaJoias")
