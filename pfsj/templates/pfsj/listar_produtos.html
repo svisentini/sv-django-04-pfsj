@@ -12,6 +12,8 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         .image-container {
             width: 100%;
@@ -63,10 +65,19 @@
                     </select>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary mt-2">Filtrar</button>
+            <!-- Botão para Filtrar as informações -->
+            <button type="submit" class="btn btn-primary mt-2">
+                Filtrar
+            </button>
+            <!-- Botão para abrir a Modal -->
+            <button type="button" class="btn btn-primary mt-2 ms-3" data-bs-toggle="modal" data-bs-target="#cadastrarJoiaModal">
+                Cadastrar Joia
+            </button>
         </form>
-        
+
+        <!-- ============================================================================================ -->
         <!-- Lista de Joias -->
+        <!-- ============================================================================================ -->
         <div class="row">
             {% for joia in joias %}
                 <div class="col-md-3 mb-4">
@@ -81,8 +92,23 @@
                         <div class="card-body">
                             <h5 class="card-title">{{ joia.codigo }}</h5>
                             <p class="card-text">{{ joia.descricao }}</p>
-                            <div class="price-container">
-                                <p class="card-text text-end text-muted">R$ {{ joia.preco_venda }}</p>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <!-- Botão de Editar -->
+                                    <a href="#" class="btn btn-sm btn-outline-primary me-2">
+                                        <i class="bi bi-pencil"></i> <!-- Ícone de edição do Bootstrap Icons -->
+                                    </a>
+                                    <!-- Botão de Excluir -->
+                                    <a href="#" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
+                                       data-joia-id="{{ joia.id }}"
+                                       data-joia-codigo="{{ joia.codigo }}"
+                                       data-joia-descricao="{{ joia.descricao }}">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                                <!-- Preço alinhado à direita -->
+                                <p class="card-text text-muted mb-0">R$ {{ joia.preco_venda }}</p>
                             </div>
 
                         </div>
@@ -94,14 +120,125 @@
         </div>
     </div>
 
+    <!-- ============================================================================================ -->
+    <!-- Modal de Cadastro de Joias -->
+    <!-- ============================================================================================ -->
+    <div class="modal fade" id="cadastrarJoiaModal" tabindex="-1" aria-labelledby="cadastrarJoiaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cadastrarJoiaModalLabel">Cadastrar Nova Joia</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formulário de Cadastro -->
+                    <form method="post" enctype="multipart/form-data" action="{% url 'cadastrarJoias' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="codigo" class="form-label">Código</label>
+                            <input type="text" class="form-control" id="codigo" name="codigo" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="descricao" name="descricao" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="preco_compra" class="form-label">Preço de Compra</label>
+                            <input type="number" step="0.01" class="form-control" id="preco_compra" name="preco_compra" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="preco_venda" class="form-label">Preço de Venda</label>
+                            <input type="number" step="0.01" class="form-control" id="preco_venda" name="preco_venda" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="quantidade" class="form-label">Quantidade</label>
+                            <input type="number" class="form-control" id="quantidade" name="quantidade" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="foto" class="form-label">Foto</label>
+                            <input type="file" class="form-control" id="foto" name="foto">
+                        </div>
+                        <div class="mb-3">
+                            <label for="tipo" class="form-label">Tipo de Joia</label>
+                            <select class="form-control" id="tipo" name="tipo" required>
+                                <option value="">Selecione um tipo</option>
+                                {% for tipo in tipos %}
+                                    <option value="{{ tipo.id }}">{{ tipo.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="ativo" name="ativo" checked>
+                            <label class="form-check-label" for="ativo">Ativo</label>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                            <button type="submit" class="btn btn-primary">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================================================ -->
+    <!-- Modal de Confirmação de Exclusão -->
+    <!-- ============================================================================================ -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir esta joia?</p>
+                    <p><strong>Código:</strong> <span id="joiaCodigo"></span></p>
+                    <p><strong>Descrição:</strong> <span id="joiaDescricao"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteButton">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
+    <!-- ============================================================================================ -->
 
+    <script>
+    // Quando a modal é aberta, preencha os dados da joia
+    document.getElementById('confirmDeleteModal').addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget; // Botão que acionou a modal
+        const joiaId = button.getAttribute('data-joia-id');
+        const joiaCodigo = button.getAttribute('data-joia-codigo');
+        const joiaDescricao = button.getAttribute('data-joia-descricao');
 
+        // Preenche os dados na modal
+        document.getElementById('joiaCodigo').textContent = joiaCodigo;
+        document.getElementById('joiaDescricao').textContent = joiaDescricao;
 
-  
-
-
+        // Configura o botão de exclusão para enviar o ID da joia
+        const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+        confirmDeleteButton.onclick = function () {
+            fetch(`/pfsj/excluir_joia/${joiaId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}', // Adiciona o token CSRF
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    // Recarrega a página após a exclusão
+                    window.location.reload();
+                } else {
+                    alert('Erro ao excluir a joia.');
+                }
+            });
+        };
+    });
+    </script>
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

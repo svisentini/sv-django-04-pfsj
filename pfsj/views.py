@@ -1,6 +1,8 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.http import require_POST
 
+from .forms import JoiaForm
 from .models import Joia, TipoJoia
 
 # Create your views here.
@@ -27,3 +29,20 @@ def lista_joias(request):
         'tipos': listaTipos
     })
 
+
+def cadastrar_joia(request):
+    if request.method == 'POST':
+        form = JoiaForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('listaJoias')  # Ajuste para a página de listagem depois
+    else:
+        form = JoiaForm()
+
+    return render(request, 'pfsj/cadastro_joia.html', {'form': form})
+
+@require_POST
+def excluir_joia(request, joia_id):
+    joia = get_object_or_404(Joia, id=joia_id)
+    joia.delete()
+    return JsonResponse({'status':'success'})
