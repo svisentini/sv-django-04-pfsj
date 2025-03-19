@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
@@ -42,7 +43,7 @@ def cadastrar_joia(request):
 
     return render(request, 'pfsj/cadastro_joia.html', {'form': form})
 
-
+@login_required
 def excluir_joia(request, id):
     joia = get_object_or_404(Joia, id=id)
 
