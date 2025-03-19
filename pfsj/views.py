@@ -28,10 +28,13 @@ def lista_joias(request):
 
     return render(request, 'pfsj/listar_produtos.html', {
         'joias': listaJoias,
-        'tipos': listaTipos
+        'tipos': listaTipos,
+        'user_can_add':  request.user.has_perm('pfsj.add_joia'),
+        'user_can_edit': request.user.has_perm('pfsj.change_joia'),
+        'user_can_delete': request.user.has_perm('pfsj.delete_joia'),
     })
 
-
+@login_required
 def cadastrar_joia(request):
     if request.method == 'POST':
         form = JoiaForm(request.POST, request.FILES)

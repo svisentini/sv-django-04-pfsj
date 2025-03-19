@@ -104,14 +104,24 @@
                     </select>
                 </div>
             </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+
             <!-- Botão para Filtrar as informações -->
-            <button type="submit" class="btn btn-primary mt-2">
+            <button type="submit" class="btn btn-primary mt-3">
                 Filtrar
             </button>
-            <!-- Botão para abrir a Modal -->
-            <button type="button" class="btn btn-outline-primary mt-2 ms-3" data-bs-toggle="modal" data-bs-target="#cadastrarJoiaModal">
-                +   Cadastrar Joia
-            </button>
+            {% if user.is_authenticated %}
+                {% if user_can_add %}
+                    <!-- Botão para abrir a Modal -->
+                    <button type="button" class="btn btn-outline-primary mt-3 ms-3" data-bs-toggle="modal" data-bs-target="#cadastrarJoiaModal">
+                        +   Cadastrar Joia
+                    </button>
+                {% endif %}
+            {% endif %}
+
+            </div>
+
         </form>
 
         <!-- ============================================================================================ -->
@@ -135,20 +145,24 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     {% if user.is_authenticated %}
-                                        <!-- Botão de Editar -->
-                                        <a href="#" class="btn btn-sm btn-outline-primary me-2">
-                                            <i class="bi bi-pencil"></i> <!-- Ícone de edição do Bootstrap Icons -->
-                                        </a>
-                                        <!-- Botão de Excluir -->
-                                        <a href="#" class="btn btn-sm btn-outline-danger"
-                                           data-bs-toggle="modal"
-                                           data-bs-target="#confirmDeleteModal"
-                                           data-id="{{ joia.id }}"
-                                           data-codigo="{{ joia.codigo }}"
-                                           data-descricao="{{ joia.descricao }}"
-                                           data-preco="{{ joia.preco_venda }}">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
+                                        {% if user_can_edit %}
+                                            <!-- Botão de Editar -->
+                                            <a href="#" class="btn btn-sm btn-outline-primary me-2">
+                                                <i class="bi bi-pencil"></i> <!-- Ícone de edição do Bootstrap Icons -->
+                                            </a>
+                                        {% endif %}
+                                        {% if user_can_delete %}
+                                            <!-- Botão de Excluir -->
+                                            <a href="#" class="btn btn-sm btn-outline-danger"
+                                               data-bs-toggle="modal"
+                                               data-bs-target="#confirmDeleteModal"
+                                               data-id="{{ joia.id }}"
+                                               data-codigo="{{ joia.codigo }}"
+                                               data-descricao="{{ joia.descricao }}"
+                                               data-preco="{{ joia.preco_venda }}">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        {% endif %}
                                     {% endif %}
                                 </div>
                                 <!-- Preço alinhado à direita -->
