@@ -44,7 +44,20 @@ def cadastrar_joia(request):
     else:
         form = JoiaForm()
 
-    return render(request, 'pfsj/cadastro_joia.html', {'form': form})
+    # return render(request, 'pfsj/cadastro_joia.html', {'form': form})
+    return redirect("listaJoias")
+
+@login_required
+def alterar_joia(request):
+    if request.method == 'POST':
+        form = JoiaForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('listaJoias')  # Ajuste para a página de listagem depois
+    else:
+        form = JoiaForm()
+
+    return redirect("listaJoias")
 
 @login_required
 def excluir_joia(request, id):

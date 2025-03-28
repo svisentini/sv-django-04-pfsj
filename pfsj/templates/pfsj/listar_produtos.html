@@ -114,7 +114,10 @@
             {% if user.is_authenticated %}
                 {% if user_can_add %}
                     <!-- Botão para abrir a Modal -->
-                    <button type="button" class="btn btn-outline-primary mt-3 ms-3" data-bs-toggle="modal" data-bs-target="#cadastrarJoiaModal">
+                    <button type="button"
+                            class="btn btn-outline-primary mt-3 ms-3"
+                            data-bs-toggle="modal"
+                            data-bs-target="#cadastrarJoiaModal">
                         +   Cadastrar Joia
                     </button>
                 {% endif %}
@@ -147,7 +150,11 @@
                                     {% if user.is_authenticated %}
                                         {% if user_can_edit %}
                                             <!-- Botão de Editar -->
-                                            <a href="#" class="btn btn-sm btn-outline-primary me-2">
+                                            <a href="#" class="btn btn-sm btn-outline-primary me-2"
+                                               data-bs-toggle="modal"
+                                               data-bs-target="#alterarJoiaModal"
+                                               data-alt-codigo="{{ joia.codigo }}"
+                                               data-alt-descricao="{{ joia.descricao }}" >
                                                 <i class="bi bi-pencil"></i> <!-- Ícone de edição do Bootstrap Icons -->
                                             </a>
                                         {% endif %}
@@ -204,6 +211,27 @@
     </script>
 
     <!-- ============================================================================================ -->
+    <!-- Script de Alteração de Joias -->
+    <!-- ============================================================================================ -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var altJoiaModal = document.getElementById("alterarJoiaModal");
+            altJoiaModal.addEventListener("show.bs.modal", function (event) {
+                var button = event.relatedTarget;
+                var id = button.getAttribute("data-id");
+                var codigo = button.getAttribute("data-alt-codigo");
+                var descricao = button.getAttribute("data-alt-descricao");
+                var preco = button.getAttribute("data-preco");
+
+                document.getElementById("modalAlteracaoCodigo").value = codigo;
+                document.getElementById("modalAlteracaoDescricao").value = descricao;
+                document.getElementById("modalPreco").value = preco;
+
+            });
+        });
+    </script>
+
+    <!-- ============================================================================================ -->
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
@@ -213,6 +241,7 @@
 
     {% include 'pfsj/modal_joia_confirma_exclusao.html' %}
     {% include 'pfsj/modal_joia_cadastro.html' %}
+    {% include 'pfsj/modal_joia_alteracao.html' %}
 
   </body>
 </html>
