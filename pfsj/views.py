@@ -47,17 +47,47 @@ def cadastrar_joia(request):
     # return render(request, 'pfsj/cadastro_joia.html', {'form': form})
     return redirect("listaJoias")
 
+
 @login_required
 def alterar_joia(request):
     if request.method == 'POST':
-        form = JoiaForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('listaJoias')  # Ajuste para a página de listagem depois
-    else:
-        form = JoiaForm()
+        joia_id = request.POST.get('joia_id')
+        if not joia_id:
+            # Se não houver ID, retorna um erro JSON
+            return JsonResponse({'success': False, 'errors': {'__all__': 'ID da joia não fornecido.'}}, status=400)
 
-    return redirect("listaJoias")
+        try:
+            joia_instance = Joia.objects.get(pk=joia_id)
+        except Joia.DoesNotExist:
+            return JsonResponse({'success': False, 'errors': {'__all__': 'Joia não encontrada.'}}, status=404)
+
+        form = JoiaForm(request.POST, request.FILES, instance=joia_instance)
+
+        if form.is_valid():
+            joia = form.save()
+            # Retorna um JSON de sucesso. O JavaScript fechará a modal e recarregará.
+            return JsonResponse({
+                'success': True,
+                'message': f'Joia "{joia.codigo}" alterada com sucesso!',
+                # Opcional: pode retornar os dados atualizados da joia se precisar
+                # 'joia_data': {
+                #     'id': joia.id,
+                #     'codigo': joia.codigo,
+                #     'descricao': joia.descricao,
+                #     # ... outros campos
+                # }
+            })
+        else:
+            # Retorna um JSON com os erros do formulário.
+            # form.errors já é um dicionário que pode ser serializado para JSON.
+            # O JavaScript usará isso para exibir os erros na modal.
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    
+    # Se a requisição não for POST, retorna um erro ou redireciona para a listagem
+    return JsonResponse({'success': False, 'errors': {'__all__': 'Método não permitido.'}}, status=405)
+
+
+
 
 @login_required
 def excluir_joia(request, id):
