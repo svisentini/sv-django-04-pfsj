@@ -154,7 +154,17 @@
                                                data-bs-toggle="modal"
                                                data-bs-target="#alterarJoiaModal"
                                                data-alt-codigo="{{ joia.codigo }}"
-                                               data-alt-descricao="{{ joia.descricao }}" >
+                                               data-alt-descricao="{{ joia.descricao }}"
+                                               data-alt-preco-compra="{{ joia.preco_compra }}"
+                                               data-alt-preco-venda="{{ joia.preco_venda }}"
+                                               data-alt-quantidade="{{ joia.quantidade }}"
+                                               {% if joia.foto %}
+                                                    data-alt-foto="{{ joia.foto.url }}"
+                                               {% else %}
+                                                    data-alt-foto=""
+                                               {% endif %}
+                                               data-alt-tipo="{{ joia.tipo.id }}"
+                                            >
                                                 <i class="bi bi-pencil"></i> <!-- Ícone de edição do Bootstrap Icons -->
                                             </a>
                                         {% endif %}
@@ -166,11 +176,20 @@
                                                data-id="{{ joia.id }}"
                                                data-codigo="{{ joia.codigo }}"
                                                data-descricao="{{ joia.descricao }}"
-                                               data-preco="{{ joia.preco_venda }}">
+                                               data-preco="{{ joia.preco_venda }}"
+                                               data-preco="{{ joia.preco_venda }}"
+                                            >
                                                 <i class="bi bi-trash"></i>
                                             </a>
                                         {% endif %}
                                     {% endif %}
+
+                                    <!--
+                                    <p>preco compra: {{ joia.preco_compra }}</p>
+                                    <p>preco venda : {{ joia.preco_venda }}</p>
+                                    -->
+                                    
+
                                 </div>
                                 <!-- Preço alinhado à direita -->
                                 <p class="card-text text-muted mb-0">R$ {{ joia.preco_venda }}</p>
@@ -221,11 +240,57 @@
                 var id = button.getAttribute("data-id");
                 var codigo = button.getAttribute("data-alt-codigo");
                 var descricao = button.getAttribute("data-alt-descricao");
-                var preco = button.getAttribute("data-preco");
+                var precoCompra = button.getAttribute("data-alt-preco-compra");
+                var precoVenda = button.getAttribute("data-alt-preco-venda");
+                var quantidade = button.getAttribute("data-alt-quantidade");
+                var fotoUrl = button.getAttribute("data-alt-foto");
+                var tipoId = button.getAttribute("data-alt-tipo");
 
+                //console.log("Preço de Compra antes:", precoCompra);
+                if (precoCompra){
+                    precoCompra = String(precoCompra).replace(',','.');
+                }
+                if (precoVenda){
+                    precoVenda = String(precoVenda).replace(",",".");
+                }
+                if (quantidade){
+                    quantidade = String(quantidade);
+                }
+                //console.log("Preço de Compra depois:", precoCompra);
+                
                 document.getElementById("modalAlteracaoCodigo").value = codigo;
                 document.getElementById("modalAlteracaoDescricao").value = descricao;
-                document.getElementById("modalPreco").value = preco;
+                document.getElementById("modalAlteracaoPrecoCompra").value = precoCompra;
+                document.getElementById("modalAlteracaoPrecoVenda").value = precoVenda;
+                document.getElementById("modalAlteracaoQuantidade").value = quantidade;
+                
+                var selectTipo = document.getElementById("modalAlteracaoTipo").value = tipoId;
+                
+                // Lidar com a exibição da foto atual
+                var currentPhotoPreview = document.getElementById("currentPhotoPreview");
+                currentPhotoPreview.innerHTML = ''; // Limpa qualquer conteúdo anterior
+
+                // Limpa o input de arquivo para garantir que não haja arquivo pré-selecionado do último uso
+                document.getElementById("modalAlteracaoFoto").value = '';
+
+                // Verifica se existe uma URL de foto válida e a exibe
+                if (fotoUrl && fotoUrl !== 'None' && fotoUrl !== '/media/None' && fotoUrl !== '') {
+                    var img = document.createElement("img");
+                    img.src = fotoUrl;
+                    img.alt = "Foto atual da Joia";
+                    img.style.maxWidth = "150px";
+                    img.style.height = "auto";
+                    img.style.display = "block";
+                    img.style.marginBottom = "10px";
+                    currentPhotoPreview.appendChild(img);
+
+                    // Se você usou o campo hidden para a URL da foto atual
+                    document.getElementById("modalAlteracaoFotoUrl").value = fotoUrl;
+                } else {
+                    currentPhotoPreview.innerHTML = '<p>Nenhuma foto atual.</p>';
+                    //  Se você usou o campo hidden, limpe-o também
+                    document.getElementById("modalAlteracaoFotoUrl").value = '';
+                }
 
             });
         });

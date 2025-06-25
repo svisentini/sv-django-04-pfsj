@@ -73,7 +73,7 @@ No entanto, você pode garantir que eles estejam disponíveis rodando o comando:
 Isso copia todos os arquivos estáticos para a pasta definida em STATIC_ROOT 
 
 Rodar o projeto visivel na rede interna:
-python manage.py runserver 0.0.0.0:8000
+python manage.py runserver 0.0.0.0:8100
 
 
 <<==== Utilizando cloudinary para servir os arquivos estaticos===>

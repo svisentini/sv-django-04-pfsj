@@ -12,43 +12,75 @@
                     <!-- Formulário de Cadastro -->
                     <form method="post" enctype="multipart/form-data" action="{% url 'alterarJoias' %}">
                         {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="modalAlteracaoCodigo" class="form-label">Código</label>
-                            <input type="text" class="form-control" id="modalAlteracaoCodigo" name="codigo" required disabled>
+
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="modalAlteracaoCodigo" class="form-label">Código</label>
+                                <input type="text" class="form-control" id="modalAlteracaoCodigo" name="codigo" required disabled>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="modalAlteracaoTipo" class="form-label">Tipo de Joia</label>
+                                <select class="form-control" id="modalAlteracaoTipo" name="tipo" required>
+                                    <option value="">Selecione um tipo</option>
+                                    {% for tipo in tipos %}
+                                        <option value="{{ tipo.id }}">{{ tipo.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
                         </div>
+
+
+
+
                         <div class="mb-3">
                             <label for="modalAlteracaoDescricao" class="form-label">Descrição</label>
                             <textarea class="form-control" id="modalAlteracaoDescricao" name="descricao" rows="3" required></textarea>
                         </div>
-                        <div class="mb-3">
-                            <label for="preco_compra" class="form-label">Preço de Compra</label>
-                            <input type="number" step="0.01" class="form-control" id="preco_compra" name="preco_compra" required>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="modalAlteracaoPrecoCompra" class="form-label">Preço de Compra</label>
+                                <input type="number" step="0.01" class="form-control" id="modalAlteracaoPrecoCompra" name="preco_compra" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="modalAlteracaoPrecoVenda" class="form-label">Preço de Venda</label>
+                                <input type="number" step="0.01" class="form-control" id="modalAlteracaoPrecoVenda" name="preco_venda" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="modalAlteracaoQuantidade" class="form-label">Quantidade</label>
+                                <input type="number" class="form-control" id="modalAlteracaoQuantidade" name="quantidade" required>
+                            </div>
                         </div>
+
+
+
+
+
                         <div class="mb-3">
-                            <label for="preco_venda" class="form-label">Preço de Venda</label>
-                            <input type="number" step="0.01" class="form-control" id="preco_venda" name="preco_venda" required>
+                            <label class="form-label">Foto Atual</label>
+                            <div id="currentPhotoPreview" style="margin-bottom: 10px;">
+                                </div>
+                        
+                            <label for="modalAlteracaoFoto" class="form-label">Alterar Foto (selecione uma nova)</label>
+                            <input type="file" class="form-control" id="modalAlteracaoFoto" name="foto">
+                            <small class="form-text text-muted">Deixe em branco para manter a foto atual.</small>
+                        
+                            <input type="hidden" id="modalAlteracaoFotoUrl" name="foto_atual_url">
                         </div>
-                        <div class="mb-3">
-                            <label for="quantidade" class="form-label">Quantidade</label>
-                            <input type="number" class="form-control" id="quantidade" name="quantidade" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="foto" class="form-label">Foto</label>
-                            <input type="file" class="form-control" id="foto" name="foto">
-                        </div>
-                        <div class="mb-3">
-                            <label for="tipo" class="form-label">Tipo de Joia</label>
-                            <select class="form-control" id="tipo" name="tipo" required>
-                                <option value="">Selecione um tipo</option>
-                                {% for tipo in tipos %}
-                                    <option value="{{ tipo.id }}">{{ tipo.nome }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+
+
+
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="ativo" name="ativo" checked>
                             <label class="form-check-label" for="ativo">Ativo</label>
                         </div>
+
+                        
+
+
+
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                             <button type="submit" class="btn btn-primary">Salvar</button>
