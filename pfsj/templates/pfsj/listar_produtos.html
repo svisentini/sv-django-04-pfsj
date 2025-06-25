@@ -153,6 +153,7 @@
                                             <a href="#" class="btn btn-sm btn-outline-primary me-2"
                                                data-bs-toggle="modal"
                                                data-bs-target="#alterarJoiaModal"
+                                               data-alt-id="{{ joia.id }}"
                                                data-alt-codigo="{{ joia.codigo }}"
                                                data-alt-descricao="{{ joia.descricao }}"
                                                data-alt-preco-compra="{{ joia.preco_compra }}"
@@ -235,9 +236,13 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             var altJoiaModal = document.getElementById("alterarJoiaModal");
+            var alterarJoiaForm = document.getElementById("alterarJoiaForm"); // Pega o formulário pela nova ID
+            var formErrorsDiv = document.getElementById("formErrors"); // O div para erros
+
+            // Listener para preencher a modal quando ela é aberta.
             altJoiaModal.addEventListener("show.bs.modal", function (event) {
                 var button = event.relatedTarget;
-                var id = button.getAttribute("data-id");
+                var joiaId = button.getAttribute("data-alt-id");
                 var codigo = button.getAttribute("data-alt-codigo");
                 var descricao = button.getAttribute("data-alt-descricao");
                 var precoCompra = button.getAttribute("data-alt-preco-compra");
@@ -257,7 +262,12 @@
                     quantidade = String(quantidade);
                 }
                 //console.log("Preço de Compra depois:", precoCompra);
+
+                // Limpa erros anteriores e esconde a div de erro
+                formErrorsDiv.innerHTML = '';
+                formErrorsDiv.classList.add('d-none');
                 
+                // Preecher os campos comuns.
                 document.getElementById("modalAlteracaoCodigo").value = codigo;
                 document.getElementById("modalAlteracaoDescricao").value = descricao;
                 document.getElementById("modalAlteracaoPrecoCompra").value = precoCompra;
@@ -292,7 +302,96 @@
                     document.getElementById("modalAlteracaoFotoUrl").value = '';
                 }
 
+                var hiddenIdInput = document.getElementById("modalAlteracaoJoiaId");
+                if (hiddenIdInput) {
+                    hiddenIdInput.value = joiaId;
+                } else {
+                    var form = altJoiaModal.querySelector('form');
+                    hiddenIdInput = document.createElement('input');
+                    hiddenIdInput.type = 'hidden';
+                    hiddenIdInput.name = 'joia_id';
+                    hiddenIdInput.id = 'modalAlteracaoJoiaId';
+                    hiddenIdInput.value = joiaId;
+                    form.appendChild(hiddenIdInput);
+                }
+
             });
+
+
+            // NOVIDADE: Listener para o SUBMIT do formulário da modal
+            alterarJoiaForm.addEventListener("submit", function (e) {
+                e.preventDefault(); // IMPEDE o envio padrão do formulário (que recarregaria a página)
+
+                formErrorsDiv.innerHTML = ''; // Limpa erros anteriores
+                formErrorsDiv.classList.add('d-none'); // Esconde a div de erro
+
+                // Cria um FormData object, que é essencial para enviar dados do formulário,
+                // incluindo arquivos (enctype="multipart/form-data").
+                var formData = new FormData(alterarJoiaForm);
+
+                // Obtenha o token CSRF
+                var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                fetch(alterarJoiaForm.action, { // A URL para onde o formulário deve enviar
+                    method: 'POST',
+                    body: formData, // Envia o FormData
+                    headers: {
+                        'X-CSRFToken': csrftoken, // Adiciona o token CSRF no cabeçalho
+                    },
+                })
+                .then(response => {
+                    // Clona a resposta para poder ler o JSON em caso de erro também
+                    const clonedResponse = response.clone();
+                    return clonedResponse.json().then(data => ({
+                        status: response.status,
+                        ok: response.ok,
+                        data: data
+                    }));
+                })
+                .then(({ status, ok, data }) => {
+                    if (ok) { // Se a resposta for 2xx (sucesso)
+                        // Fecha a modal
+                        var modalInstance = bootstrap.Modal.getInstance(altJoiaModal);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+
+                        // Exibe a mensagem de sucesso (opcional, se não usar Django messages)
+                        // alert(data.message);
+
+                        // Recarrega a página para atualizar a listagem de cards.
+                        // Para uma atualização mais granular (sem recarregar tudo),
+                        // você teria que manipular o DOM para atualizar o card específico ou a lista.
+                        // Por enquanto, recarregar a página é o mais simples e funcional.
+                        location.reload();
+
+                    } else { // Se houver um erro (status 4xx, 5xx)
+                        formErrorsDiv.classList.remove('d-none'); // Mostra a div de erro
+                        var errorsHtml = '<ul>';
+                        // Itera sobre os erros retornados pelo Django
+                        // O 'data.errors' virá como um objeto { 'campo': ['erro1', 'erro2'], '__all__': ['erro global'] }
+                        for (const fieldName in data.errors) {
+                            if (data.errors.hasOwnProperty(fieldName)) {
+                                const errors = data.errors[fieldName];
+                                for (const error of errors) {
+                                    // Exibe o nome do campo se não for um erro global
+                                    const displayFieldName = fieldName === '__all__' ? '' : fieldName.replace('_', ' ').charAt(0).toUpperCase() + fieldName.replace('_', ' ').slice(1) + ': ';
+                                    errorsHtml += `<li><strong>${displayFieldName}</strong> ${error}</li>`;
+                                }
+                            }
+                        }
+                        errorsHtml += '</ul>';
+                        formErrorsDiv.innerHTML = errorsHtml;
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro na requisição AJAX:', error);
+                    formErrorsDiv.classList.remove('d-none');
+                    formErrorsDiv.innerHTML = 'Ocorreu um erro inesperado. Por favor, tente novamente.';
+                });
+            });
+
+
         });
     </script>
 

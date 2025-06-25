@@ -7,7 +7,7 @@ class JoiaForm(forms.ModelForm):
         # Inclua todos os campos que você está editando no modal.
         # Não inclua 'codigo' se ele estiver 'disabled' e você não quer que seja editável após a criação.
         # Se 'codigo' for apenas para exibição, ele não precisa estar no form.
-        fields = ['codigo', 'descricao', 'preco_compra', 'preco_venda', 'quantidade', 'foto', 'tipo', 'ativo']
+        fields = ['descricao', 'preco_compra', 'preco_venda', 'quantidade', 'foto', 'tipo', 'ativo']
 
         # Opcional: widgets personalizados para inputs específicos
         widgets = {
