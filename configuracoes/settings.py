@@ -144,3 +144,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 LOGIN_REDIRECT_URL = 'listaJoias'  # ou use o nome da URL: LOGIN_REDIRECT_URL = 'listagem_joias'
 LOGOUT_REDIRECT_URL = 'listaJoias'
+

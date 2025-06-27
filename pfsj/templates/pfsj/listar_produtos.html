@@ -70,7 +70,7 @@
     <!-- Exibe as mensagens -->
     <!-- ============================================================================================ -->
     {% if messages %}
-        <div class="container mt-3">
+        <div class="container mt-3" id="django-messages-container">
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
                     <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill text-success{% elif message.tags == 'error' %}bi-x-circle-fill text-danger{% else %}bi-info-circle-fill text-primary{% endif %}"></i>
@@ -230,16 +230,16 @@
         });
     </script>
 
-    <!-- ============================================================================================ -->
-    <!-- Script de Alteração de Joias -->
-    <!-- ============================================================================================ -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+
+            // ============================================================================================ 
+            // Exibição da Modal de Alteração de Jóias
+            // ============================================================================================
             var altJoiaModal = document.getElementById("alterarJoiaModal");
             var alterarJoiaForm = document.getElementById("alterarJoiaForm"); // Pega o formulário pela nova ID
             var formErrorsDiv = document.getElementById("formErrors"); // O div para erros
 
-            // Listener para preencher a modal quando ela é aberta.
             altJoiaModal.addEventListener("show.bs.modal", function (event) {
                 var button = event.relatedTarget;
                 var joiaId = button.getAttribute("data-alt-id");
@@ -318,7 +318,10 @@
             });
 
 
-            // NOVIDADE: Listener para o SUBMIT do formulário da modal
+            // ============================================================================================ 
+            // Gravar da Modal de Alteração de Jóias
+            // ============================================================================================
+
             alterarJoiaForm.addEventListener("submit", function (e) {
                 e.preventDefault(); // IMPEDE o envio padrão do formulário (que recarregaria a página)
 
@@ -392,6 +395,127 @@
             });
 
 
+            // ============================================================================================ 
+            // Exibição da Modal de Criação de Jóias
+            // ============================================================================================
+
+            var cadastrarJoiaModal = document.getElementById("cadastrarJoiaModal");
+            var cadastrarJoiaForm = document.getElementById("cadastrarJoiaForm");
+            var cadastroFormErrorsDiv = document.getElementById("cadastroFormErrors"); // Novo div de erro para cadastro
+
+            // Listener para quando a modal de CADASTRO é aberta
+            cadastrarJoiaModal.addEventListener("show.bs.modal", function (event) {
+                // Limpa o formulário quando a modal de cadastro é aberta
+                cadastrarJoiaForm.reset(); // Reseta todos os campos do formulário
+                cadastroFormErrorsDiv.innerHTML = ''; // Limpa erros anteriores
+                cadastroFormErrorsDiv.classList.add('d-none'); // Esconde a div de erro
+                // O campo 'ativo' tem 'checked' por padrão no HTML, o reset() cuida disso.
+            });
+
+            // ============================================================================================ 
+            // Gravar da Modal de Criação de Jóias
+            // ============================================================================================
+
+            // Listener para o SUBMIT do formulário da modal de CADASTRO
+            cadastrarJoiaForm.addEventListener("submit", function (e) {
+                e.preventDefault(); // Impede o envio padrão do formulário
+
+                cadastroFormErrorsDiv.innerHTML = '';
+                cadastroFormErrorsDiv.classList.add('d-none');
+
+                var formData = new FormData(cadastrarJoiaForm); // Pega os dados do formulário de cadastro
+                var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                // Garantir que a URL tenha a barra final
+                // Pega a action original do formulário (que virá do {% url 'cadastrarJoias' %})
+                let formActionUrl = new URL(cadastrarJoiaForm.action);
+                // Adiciona a barra final se ela não existir
+                if (!formActionUrl.pathname.endsWith('/')) {
+                    formActionUrl.pathname += '/';
+                }
+                const finalUrl = formActionUrl.toString(); // Converte de volta para string
+
+                console.log("DEBUG JS: Enviando para URL:", finalUrl); // Verifique no console do navegador
+
+
+
+                fetch(finalUrl, { // A URL para onde o formulário deve enviar (cadastrarJoias)
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                    },
+                })
+                .then(response => {
+                    const clonedResponse = response.clone();
+                    return clonedResponse.json().then(data => ({
+                        status: response.status,
+                        ok: response.ok,
+                        data: data
+                    }));
+                })
+                .then(({ status, ok, data }) => {
+                    if (ok) { // Se a requisição for bem-sucedida
+                        var modalInstance = bootstrap.Modal.getInstance(cadastrarJoiaModal);
+                        if (modalInstance) {
+                            modalInstance.hide(); // Fecha a modal
+                        }
+                        //alert(data.message); // Exibe uma mensagem de sucesso
+                        location.reload(); // Recarrega a página para mostrar a nova joia
+
+                    } else { // Se houver erros de validação
+                        cadastroFormErrorsDiv.classList.remove('d-none'); // Mostra a div de erro
+                        var errorsHtml = '<ul>';
+                        for (const fieldName in data.errors) {
+                            if (data.errors.hasOwnProperty(fieldName)) {
+                                const errors = data.errors[fieldName];
+                                for (const error of errors) {
+                                    const displayFieldName = fieldName === '__all__' ? '' : fieldName.replace('_', ' ').charAt(0).toUpperCase() + fieldName.replace('_', ' ').slice(1) + ': ';
+                                    errorsHtml += `<li><strong>${displayFieldName}</strong> ${error}</li>`;
+                                }
+                            }
+                        }
+                        errorsHtml += '</ul>';
+                        cadastroFormErrorsDiv.innerHTML = errorsHtml;
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro na requisição AJAX:', error);
+                    cadastroFormErrorsDiv.classList.remove('d-none');
+                    cadastroFormErrorsDiv.innerHTML = 'Ocorreu um erro inesperado. Por favor, tente novamente.';
+                    
+                });
+            });
+
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Seleciona o contêiner das mensagens
+            const messagesContainer = document.getElementById('django-messages-container');
+
+            if (messagesContainer) {
+                // Seleciona todas as mensagens dentro do contêiner
+                const messages = messagesContainer.querySelectorAll('.alert');
+
+                messages.forEach(message => {
+                    // Define um temporizador para cada mensagem
+                    setTimeout(() => {
+                        // Adiciona a classe 'fade' e 'show' para a animação de fade-out
+                        // e depois remove a mensagem do DOM
+                        message.classList.remove('show'); // Remove a classe 'show' para iniciar o fade-out
+                        message.classList.add('fade-out'); // Adiciona uma classe para o CSS de fade-out (opcional, mas bom para transição)
+
+                        // Espera a transição de fade-out (se houver) e remove o elemento
+                        // O tempo aqui deve ser igual à duração da transição CSS, se você adicionar uma.
+                        setTimeout(() => {
+                            message.remove(); // Remove o elemento do DOM
+                        }, 500); // 500ms é um bom tempo para transição de fade
+
+                    }, 10000); // 10000 milissegundos = 10 segundos
+                });
+            }
         });
     </script>
 

@@ -7,13 +7,26 @@ class JoiaForm(forms.ModelForm):
         # Inclua todos os campos que você está editando no modal.
         # Não inclua 'codigo' se ele estiver 'disabled' e você não quer que seja editável após a criação.
         # Se 'codigo' for apenas para exibição, ele não precisa estar no form.
-        fields = ['descricao', 'preco_compra', 'preco_venda', 'quantidade', 'foto', 'tipo', 'ativo']
+        fields = ['codigo', 'descricao', 'preco_compra', 'preco_venda', 'quantidade', 'foto', 'tipo', 'ativo']
 
         # Opcional: widgets personalizados para inputs específicos
         widgets = {
             'descricao': forms.Textarea(attrs={'rows': 3}),
             # Outros widgets se precisar personalizar o HTML gerado pelo form
+            'preco_compra': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+            'preco_venda': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+            'quantidade': forms.NumberInput(attrs={'min': '0'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        # Pega um argumento personalizado 'for_update' se ele for passado
+        self.for_update = kwargs.pop('for_update', False)
+        super().__init__(*args, **kwargs)
+
+        # Se o formulário é para ALTERAÇÃO, remova o campo 'codigo'
+        if self.for_update and 'codigo' in self.fields:
+            self.fields['codigo'].required = False # Opcional: torna não obrigatório
+            del self.fields['codigo'] # Remove o campo do formulário
 
     # Você pode adicionar validações customizadas aqui, se necessário.
     # Exemplo: garantir que o preço de venda seja maior que o preço de compra
