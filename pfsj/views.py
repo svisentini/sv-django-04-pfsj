@@ -36,20 +36,52 @@ def lista_joias(request):
 
 @login_required
 def cadastrar_joia(request):
-    if request.method == 'POST':
-        form = JoiaForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('listaJoias')  # Ajuste para a página de listagem depois
-    else:
-        form = JoiaForm()
+    print(f"#### DEBUG INÍCIO CADASTRAR_JOIA: Request Method is {request.method} ####") 
 
-    # return render(request, 'pfsj/cadastro_joia.html', {'form': form})
-    return redirect("listaJoias")
+    if request.method == 'POST':
+        print("DEBUG: Método é POST. Prosseguindo com o formulário.") # Este print confirma que o método é POST
+        form = JoiaForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            print("DEBUG: Formulário é válido. Salvando joia.") # Este print se o formulário é válido
+            joia = form.save()
+            messages.success(request, f'Joia "{joia.codigo}" criada com sucesso!')
+            return JsonResponse({
+                'success': True,
+                'message': f'Joia "{joia.codigo}" cadastrada com sucesso!',
+                'new_joia_data': {
+                    'id': joia.id,
+                    'codigo': joia.codigo,
+                    'descricao': joia.descricao,
+                    'preco_venda': str(joia.preco_venda),
+                    'quantidade': joia.quantidade,
+                    'foto_url': joia.foto.url if joia.foto else '',
+                    'tipo_id': joia.tipo.id,
+                    'tipo_nome': joia.tipo.nome,
+                    'ativo': joia.ativo,
+                }
+            })
+        else:
+            # ESTE BLOCO AGORA ESTÁ CORRETO:
+            # Se o método É POST, mas o formulário NÃO É VÁLIDO (ex: código duplicado),
+            # retorne os erros do formulário com status 400.
+            print("DEBUG: Formulário NÃO é válido. Erros:", form.errors) # Este print mostra os erros
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    else:
+        # Este bloco lida com requisições que NÃO são POST (ex: GET).
+        # É onde o 405 é retornado, o que é o comportamento esperado para métodos não permitidos.
+        print(f"DEBUG: Método NÃO é POST ({request.method}). Retornando 405.")
+        return JsonResponse({'success': False, 'errors': {'__all__': 'Método não permitido. (view >> cadastrar_joia)'}}, status=405)
+
+# O código NUNCA DEVE CHEGAR AQUI se a lógica acima estiver correta.
+# Portanto, a linha final de `return JsonResponse` que estava causando o problema
+# pode ser removida ou nunca será atingida se a lógica estiver certa.
+
 
 
 @login_required
 def alterar_joia(request):
+    print(f"#### DEBUG INÍCIO ALTERAR_JOIA: Request Method is {request.method} ####") 
     if request.method == 'POST':
         joia_id = request.POST.get('joia_id')
         if not joia_id:
@@ -61,10 +93,11 @@ def alterar_joia(request):
         except Joia.DoesNotExist:
             return JsonResponse({'success': False, 'errors': {'__all__': 'Joia não encontrada.'}}, status=404)
 
-        form = JoiaForm(request.POST, request.FILES, instance=joia_instance)
+        form = JoiaForm(request.POST, request.FILES, instance=joia_instance, for_update=True)
 
         if form.is_valid():
             joia = form.save()
+            messages.success(request, f'Joia "{joia.codigo}" alterada com sucesso!')
             # Retorna um JSON de sucesso. O JavaScript fechará a modal e recarregará.
             return JsonResponse({
                 'success': True,

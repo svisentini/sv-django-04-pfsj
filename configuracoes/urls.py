@@ -19,13 +19,19 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path, include
+from pfsj import views
+
 
 urlpatterns = [
-    path("pfsj/", include("pfsj.urls")),
-    path('admin/', admin.site.urls),
+    path("pfsj/cadastrarjoia/",           views.cadastrar_joia,   name="cadastrarJoias"   ),
+    path("pfsj/alterarjoia/",             views.alterar_joia,     name="alterarJoias"     ),
+    path("pfsj/lista",                   views.lista_joias,      name="listaJoias"       ),
+    path('pfsj/joias/excluir/<int:id>/',  views.excluir_joia,     name='excluir_joia'     ),
+    path('admin/',  admin.site.urls),
     path('login/',  LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
