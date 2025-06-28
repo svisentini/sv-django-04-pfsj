@@ -1,0 +1,324 @@
+{% extends 'pfsj/base.html' %} {# AGORA ESTENDE O SEU NOVO BASE.HTML #}
+{% load static %} {# Se você usar algum static file específico para joias, mantenha #}
+
+{% block title %}Lista de Joias{% endblock %} {# Sobrescreve o título definido no base.html #}
+
+{% block content %} {# AQUI COMEÇA O CONTEÚDO ESPECÍFICO DA PÁGINA DE JOIAS #}
+<div class="container mt-4">
+
+    <h2 class="mb-4">Gerenciamento de Joias</h2>
+
+    {% if user.is_authenticated and user_can_add %} {# Condição para exibir o botão #}
+    <div class="d-flex justify-content-end mb-3">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#cadastrarJoiaModal">
+            <i class="bi bi-plus-circle me-2"></i> Cadastrar Joia
+        </button>
+    </div>
+    {% endif %}
+
+    <form method="GET" class="mb-4 p-3 border rounded bg-light"> {# Adicionei classes de Bootstrap para o formulário #}
+        <div class="row g-3"> {# g-3 para espaçamento entre colunas #}
+            <div class="col-md-3">
+                <label for="id_filter_codigo" class="form-label visually-hidden">Código</label> {# Oculta o label, mas mantém para acessibilidade #}
+                <input type="text" name="codigo" id="id_filter_codigo" class="form-control" placeholder="Código" value="{{ request.GET.codigo }}">
+            </div>
+            <div class="col-md-3">
+                <label for="id_filter_descricao" class="form-label visually-hidden">Descrição</label>
+                <input type="text" name="descricao" id="id_filter_descricao" class="form-control" placeholder="Descrição" value="{{ request.GET.descricao }}">
+            </div>
+            <div class="col-md-3">
+                <label for="id_filter_tipo" class="form-label visually-hidden">Tipo</label>
+                <select name="tipo" id="id_filter_tipo" class="form-select"> {# form-select para Bootstrap select #}
+                    <option value="">Todos os Tipos</option>
+                    {% for tipo in tipos %}
+                        <option value="{{ tipo.id }}" {% if request.GET.tipo|stringformat:"s" == tipo.id|stringformat:"s" %}selected{% endif %}>{{ tipo.nome }}</option> {# Verificação de seleção melhorada #}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end"> {# Alinha botões na base #}
+                <button type="submit" class="btn btn-info me-2"><i class="bi bi-search me-2"></i> Filtrar</button>
+                <a href="{% url 'listaJoias' %}" class="btn btn-secondary"><i class="bi bi-x-circle me-2"></i> Limpar</a> {# Ícone de limpar #}
+            </div>
+        </div>
+    </form>
+
+    <div class="row">
+        {% for joia in joias %}
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm"> {# Adicionei shadow-sm para um visual mais moderno #}
+                    <div class="image-container">
+                        {% if joia.foto %}
+                            <img src="{{ joia.foto.url }}" class="card-img-top" alt="{{ joia.descricao }}">
+                        {% else %}
+                            <img src="{% static 'img/default.jpg' %}" class="card-img-top" alt="Imagem não disponível"> {# Use static para caminho correto #}
+                        {% endif %}
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-primary">{{ joia.codigo }}</h5> {# Cor para o título #}
+                        <p class="card-text text-muted mb-auto">{{ joia.descricao }}</p> {# mb-auto empurra o preço para baixo #}
+
+                        <div class="d-flex justify-content-between align-items-center mt-3"> {# mt-3 para espaçamento #}
+                            <div>
+                                {% if user.is_authenticated %}
+                                    {% if user_can_edit %}
+                                        <button type="button" class="btn btn-sm btn-outline-primary me-2"
+                                           data-bs-toggle="modal"
+                                           data-bs-target="#alterarJoiaModal"
+                                           data-alt-id="{{ joia.id }}"
+                                           data-alt-codigo="{{ joia.codigo }}"
+                                           data-alt-descricao="{{ joia.descricao }}"
+                                           data-alt-preco-compra="{{ joia.preco_compra }}"
+                                           data-alt-preco-venda="{{ joia.preco_venda }}"
+                                           data-alt-quantidade="{{ joia.quantidade }}"
+                                           {% if joia.foto %}
+                                                data-alt-foto="{{ joia.foto.url }}"
+                                           {% else %}
+                                                data-alt-foto=""
+                                           {% endif %}
+                                           data-alt-tipo="{{ joia.tipo.id }}"
+                                           data-alt-ativo="{{ joia.ativo|yesno:'true,false' }}" {# Adicione o ativo #}
+                                        >
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    {% endif %}
+                                    {% if user_can_delete %}
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                           data-bs-toggle="modal"
+                                           data-bs-target="#confirmDeleteModal"
+                                           data-id="{{ joia.id }}"
+                                           data-codigo="{{ joia.codigo }}"
+                                           data-descricao="{{ joia.descricao }}"
+                                           data-preco="{{ joia.preco_venda }}"
+                                        >
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            <h6 class="card-text text-success mb-0">R$ {{ joia.preco_venda|floatformat:2 }}</h6> {# Formata o preço #}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-center col-12">Nenhuma joia encontrada.</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+{# Os includes dos modais (cadastro, alteração, exclusão) continuam aqui. #}
+{# Você pode ter optado por incluí-los aqui ou diretamente no base.html se forem muito genéricos. #}
+{# Para as Joias, faz sentido mantê-los aqui. #}
+
+{% include 'pfsj/modal_joia_confirma_exclusao.html' %}
+{% include 'pfsj/modal_joia_cadastro.html' %}
+{% include 'pfsj/modal_joia_alteracao.html' %}
+
+{% endblock %} {# FIM DO BLOCK CONTENT #}
+
+{% block extra_js %} {# AQUI VAI O JAVASCRIPT ESPECÍFICO DAS MODAIS DE JOIAS #}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // --- Código para a modal de CADASTRO ---
+        var cadastrarJoiaModal = document.getElementById("cadastrarJoiaModal");
+        var cadastrarJoiaForm = document.getElementById("cadastrarJoiaForm");
+        var cadastroFormErrorsDiv = document.getElementById("cadastroFormErrors");
+
+        if (cadastrarJoiaModal) {
+            cadastrarJoiaModal.addEventListener('show.bs.modal', function (event) {
+                cadastrarJoiaForm.reset();
+                cadastroFormErrorsDiv.innerHTML = '';
+                cadastroFormErrorsDiv.classList.add('d-none');
+            });
+        }
+        
+        cadastrarJoiaForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            cadastroFormErrorsDiv.innerHTML = '';
+            cadastroFormErrorsDiv.classList.add('d-none');
+
+            var formData = new FormData(cadastrarJoiaForm);
+            var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            let formActionUrl = new URL(cadastrarJoiaForm.action);
+            if (!formActionUrl.pathname.endsWith('/')) { // Adiciona a barra final se não houver
+                formActionUrl.pathname += '/';
+            }
+            const finalUrl = formActionUrl.toString();
+
+            fetch(finalUrl, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                },
+            })
+            .then(response => {
+                const clonedResponse = response.clone();
+                return clonedResponse.json().then(data => ({
+                    status: response.status,
+                    ok: response.ok,
+                    data: data
+                }));
+            })
+            .then(({ status, ok, data }) => {
+                if (ok) {
+                    var modalInstance = bootstrap.Modal.getInstance(cadastrarJoiaModal);
+                    if (modalInstance) { modalInstance.hide(); }
+                    // Não use alert(), use Django messages. Se quiser feedback aqui, pode ser um toast.
+                    location.reload(); // Recarrega a página para exibir a nova joia e a mensagem Django
+                } else {
+                    cadastroFormErrorsDiv.classList.remove('d-none');
+                    var errorsHtml = '<ul>';
+                    for (const fieldName in data.errors) {
+                        if (data.errors.hasOwnProperty(fieldName)) {
+                            const errors = data.errors[fieldName];
+                            for (const error of errors) {
+                                const displayFieldName = fieldName === '__all__' ? '' : fieldName.replace('_', ' ').charAt(0).toUpperCase() + fieldName.replace('_', ' ').slice(1) + ': ';
+                                errorsHtml += `<li><strong>${displayFieldName}</strong> ${error}</li>`;
+                            }
+                        }
+                    }
+                    errorsHtml += '</ul>';
+                    cadastroFormErrorsDiv.innerHTML = errorsHtml;
+                }
+            })
+            .catch(error => {
+                console.error('Erro na requisição AJAX:', error);
+                cadastroFormErrorsDiv.classList.remove('d-none');
+                cadastroFormErrorsDiv.innerHTML = 'Ocorreu um erro inesperado. Por favor, tente novamente.';
+            });
+        });
+
+        // --- Código para a modal de ALTERAÇÃO ---
+        var alterarJoiaModal = document.getElementById('alterarJoiaModal');
+        var alterarJoiaForm = document.getElementById('alterarJoiaForm');
+        var alterarJoiaIdInput = document.getElementById('alterar_joia_id');
+        var alterarFormErrorsDiv = document.getElementById('alterarFormErrors');
+
+        var idCodigoAlt = document.getElementById('id_codigo_alt');
+        var idTipoAlt = document.getElementById('id_tipo_alt');
+        var idDescricaoAlt = document.getElementById('id_descricao_alt');
+        var idPrecoCompraAlt = document.getElementById('id_preco_compra_alt');
+        var idPrecoVendaAlt = document.getElementById('id_preco_venda_alt');
+        var idQuantidadeAlt = document.getElementById('id_quantidade_alt');
+        var idFotoAlt = document.getElementById('id_foto_alt');
+        var idAtivoAlt = document.getElementById('id_ativo_alt');
+        var currentFotoPreviewAlt = document.getElementById('current_foto_preview_alt');
+
+        if (alterarJoiaModal) {
+            alterarJoiaModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var row = button.closest('div.card').closest('div.col-md-3'); // Ajuste aqui para pegar os data-alt da div.col-md-3
+
+                // Resetar erros anteriores
+                alterarFormErrorsDiv.innerHTML = '';
+                alterarFormErrorsDiv.classList.add('d-none');
+
+                // Preenche os campos do formulário com os dados da linha da tabela
+                alterarJoiaIdInput.value = row.dataset.altId;
+                idCodigoAlt.value = row.dataset.altCodigo;
+                idTipoAlt.value = row.dataset.altTipo; // Seleciona o tipo correto no dropdown
+                idDescricaoAlt.value = row.dataset.altDescricao;
+                idPrecoCompraAlt.value = parseFloat(row.dataset.altPrecoCompra).toFixed(2);
+                idPrecoVendaAlt.value = parseFloat(row.dataset.altPrecoVenda).toFixed(2);
+                idQuantidadeAlt.value = parseInt(row.dataset.altQuantidade);
+                idAtivoAlt.checked = row.dataset.altAtivo === 'true'; // 'true' ou 'false' do HTML
+
+                // Exibe a foto atual
+                if (row.dataset.altFoto && row.dataset.altFoto !== 'None' && row.dataset.altFoto !== '/media/None' && row.dataset.altFoto !== '') {
+                    currentFotoPreviewAlt.innerHTML = `<img src="${row.dataset.altFoto}" alt="Foto Atual" style="max-width: 100px; max-height: 100px; object-fit: contain;">`;
+                } else {
+                    currentFotoPreviewAlt.innerHTML = '<p>Nenhuma foto atual.</p>';
+                }
+                 // Limpa o input de arquivo para garantir que não haja arquivo pré-selecionado do último uso
+                idFotoAlt.value = '';
+            });
+        }
+        
+        alterarJoiaForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            alterarFormErrorsDiv.innerHTML = '';
+            alterarFormErrorsDiv.classList.add('d-none');
+
+            var formData = new FormData(alterarJoiaForm);
+            var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            let formActionUrl = new URL(alterarJoiaForm.action);
+            if (!formActionUrl.pathname.endsWith('/')) {
+                formActionUrl.pathname += '/';
+            }
+            const finalUrl = formActionUrl.toString();
+
+            fetch(finalUrl, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                },
+            })
+            .then(response => {
+                const clonedResponse = response.clone();
+                return clonedResponse.json().then(data => ({
+                    status: response.status,
+                    ok: response.ok,
+                    data: data
+                }));
+            })
+            .then(({ status, ok, data }) => {
+                if (ok) {
+                    var modalInstance = bootstrap.Modal.getInstance(alterarJoiaModal);
+                    if (modalInstance) { modalInstance.hide(); }
+                    // Não use alert(), use Django messages.
+                    location.reload();
+                } else {
+                    alterarFormErrorsDiv.classList.remove('d-none');
+                    var errorsHtml = '<ul>';
+                    for (const fieldName in data.errors) {
+                        if (data.errors.hasOwnProperty(fieldName)) {
+                            const errors = data.errors[fieldName];
+                            for (const error of errors) {
+                                const displayFieldName = fieldName === '__all__' ? '' : fieldName.replace('_', ' ').charAt(0).toUpperCase() + fieldName.replace('_', ' ').slice(1) + ': ';
+                                errorsHtml += `<li><strong>${displayFieldName}</strong> ${error}</li>`;
+                            }
+                        }
+                    }
+                    errorsHtml += '</ul>';
+                    alterarFormErrorsDiv.innerHTML = errorsHtml;
+                }
+            })
+            .catch(error => {
+                console.error('Erro na requisição AJAX:', error);
+                alterarFormErrorsDiv.classList.remove('d-none');
+                alterarFormErrorsDiv.innerHTML = 'Ocorreu um erro inesperado. Por favor, tente novamente.';
+            });
+        });
+
+        // --- Código para a modal de CONFIRMAÇÃO DE EXCLUSÃO ---
+        var confirmDeleteModal = document.getElementById('confirmDeleteModal'); // Ajuste o ID aqui
+        if (confirmDeleteModal) {
+            confirmDeleteModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var joiaId = button.getAttribute('data-id');
+                var joiaCodigo = button.getAttribute('data-codigo');
+                // var joiaDescricao = button.getAttribute('data-descricao'); // Não utilizado no modal de confirmação
+                // var joiaPreco = button.getAttribute('data-preco'); // Não utilizado no modal de confirmação
+
+                var joiaToDeleteCodigo = document.getElementById('joiaToDeleteCodigo'); // Ajuste o ID aqui
+                if (joiaToDeleteCodigo) {
+                    joiaToDeleteCodigo.textContent = joiaCodigo;
+                }
+
+                var deleteJoiaForm = document.getElementById('deleteForm'); // Ajuste o ID aqui
+                if (deleteJoiaForm) {
+                    deleteJoiaForm.action = `/pfsj/joias/excluir/${joiaId}/`; 
+                }
+            });
+        }
+    });
+</script>
+{% endblock %} {# FIM DO BLOCK EXTRA_JS #}

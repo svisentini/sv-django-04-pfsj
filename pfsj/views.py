@@ -4,13 +4,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
 
-from .forms import JoiaForm
-from .models import Joia, TipoJoia
+from .forms import JoiaForm, ClienteForm
+from .models import Joia, TipoJoia, Cliente
 
 # Create your views here.
 def index(request):
     return HttpResponse("Essa é a view index do APP polls")
 
+#--------------------------------------------------------------------------------------------------
 def lista_joias(request):
     filter_codigo = request.GET.get('codigo', '')
     filter_descricao = request.GET.get('descricao', '')
@@ -26,7 +27,7 @@ def lista_joias(request):
     if filter_tipo:
         listaJoias = listaJoias.filter(tipo_id=filter_tipo)
 
-    return render(request, 'pfsj/listar_produtos.html', {
+    return render(request, 'pfsj/listar_joias.html', {
         'joias': listaJoias,
         'tipos': listaTipos,
         'user_can_add':  request.user.has_perm('pfsj.add_joia'),
@@ -34,6 +35,7 @@ def lista_joias(request):
         'user_can_delete': request.user.has_perm('pfsj.delete_joia'),
     })
 
+#--------------------------------------------------------------------------------------------------
 @login_required
 def cadastrar_joia(request):
     print(f"#### DEBUG INÍCIO CADASTRAR_JOIA: Request Method is {request.method} ####") 
@@ -77,8 +79,7 @@ def cadastrar_joia(request):
 # Portanto, a linha final de `return JsonResponse` que estava causando o problema
 # pode ser removida ou nunca será atingida se a lógica estiver certa.
 
-
-
+#--------------------------------------------------------------------------------------------------
 @login_required
 def alterar_joia(request):
     print(f"#### DEBUG INÍCIO ALTERAR_JOIA: Request Method is {request.method} ####") 
@@ -119,9 +120,7 @@ def alterar_joia(request):
     # Se a requisição não for POST, retorna um erro ou redireciona para a listagem
     return JsonResponse({'success': False, 'errors': {'__all__': 'Método não permitido.'}}, status=405)
 
-
-
-
+#--------------------------------------------------------------------------------------------------
 @login_required
 def excluir_joia(request, id):
     joia = get_object_or_404(Joia, id=id)
@@ -133,3 +132,41 @@ def excluir_joia(request, id):
 
     messages.error(request, "Erro ao excluir a joia.")
     return redirect("listaJoias")
+
+#==================================================================================================================================================
+#==== Cliente
+#==================================================================================================================================================
+
+
+@login_required
+def lista_clientes(request):
+    # Opcional: Implementar filtros para nome, telefone, etc., se desejar
+    filter_nome = request.GET.get('nome', '')
+    filter_telefone = request.GET.get('telefone', '')
+
+    clientes = Cliente.objects.all() # Busca todos os clientes por padrão
+
+    if filter_nome:
+        clientes = clientes.filter(nome__icontains=filter_nome)
+    if filter_telefone:
+        clientes = clientes.filter(telefone__icontains=filter_telefone)
+    
+    # Ordenar por nome para manter a lista organizada
+    clientes = clientes.order_by('nome')
+
+    # Instancie um formulário vazio para o modal de cadastro de novo cliente
+    form_cadastro_cliente = ClienteForm()
+
+    return render(request, 'pfsj/listar_clientes.html', {
+        'clientes': clientes,
+        'form_cadastro_cliente': form_cadastro_cliente, # Passa o formulário para o template
+        'user_can_add':  request.user.has_perm('pfsj.add_cliente'), # Permissões
+        'user_can_edit': request.user.has_perm('pfsj.change_cliente'),
+        'user_can_delete': request.user.has_perm('pfsj.delete_cliente'),
+    })
+
+
+#--------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------

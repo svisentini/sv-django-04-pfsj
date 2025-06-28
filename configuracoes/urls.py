@@ -23,10 +23,16 @@ from pfsj import views
 
 
 urlpatterns = [
+    # == URLs de Joias
     path("pfsj/cadastrarjoia/",           views.cadastrar_joia,   name="cadastrarJoias"   ),
     path("pfsj/alterarjoia/",             views.alterar_joia,     name="alterarJoias"     ),
-    path("pfsj/lista",                   views.lista_joias,      name="listaJoias"       ),
+    path("pfsj/lista",                    views.lista_joias,      name="listaJoias"       ),
     path('pfsj/joias/excluir/<int:id>/',  views.excluir_joia,     name='excluir_joia'     ),
+
+    # == URLs de Cliente
+    path("pfsj/clientes/",                views.lista_clientes,   name="listaClientes"    ),
+
+    # == URLs de Admin, Login e Logout
     path('admin/',  admin.site.urls),
     path('login/',  LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Joia, TipoJoia # Certifique-se de importar o TipoJoia também
+from .models import Joia, TipoJoia, Cliente # Certifique-se de importar o TipoJoia também
 
 class JoiaForm(forms.ModelForm):
     class Meta:
@@ -43,3 +43,26 @@ class JoiaForm(forms.ModelForm):
     # e ele é 'unique=True', talvez seja necessário uma lógica para tratá-lo
     # como um campo somente leitura que não causa erro de validação de unicidade
     # se não for alterado. ModelForms geralmente lidam bem com 'instance'.
+
+
+class ClienteForm(forms.ModelForm):
+    class Meta:
+        model = Cliente
+        # Liste todos os campos que você quer que apareçam no formulário
+        fields = ['nome', 'telefone', 'endereco', 'observacao', 'ativo']
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nome completo do cliente'}),
+            'telefone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: (XX) XXXX-XXXX'}),
+            'endereco': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Rua, número, bairro, cidade'}),
+            'observacao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Informações adicionais sobre o cliente'}),
+            'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}), # Bootstrap checkbox
+        }
+
+    # Opcional: Se você quisesse tratar campos de forma diferente para atualização,
+    # você usaria o __init__ como fizemos no JoiaForm.
+    # Exemplo: Se 'nome' fosse unique=True e você quisesse desabilitá-lo na edição
+    # def __init__(self, *args, **kwargs):
+    #     self.for_update = kwargs.pop('for_update', False)
+    #     super().__init__(*args, **kwargs)
+    #     if self.for_update and 'nome' in self.fields:
+    #         self.fields['nome'].widget.attrs['readonly'] = True # Torna o campo somente leitura na edição

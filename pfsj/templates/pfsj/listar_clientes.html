@@ -1,0 +1,296 @@
+{% extends 'pfsj/base.html' %} {# Seu template base, se você tiver um #}
+{% load static %} {# Para carregar arquivos estáticos como CSS/JS #}
+
+{% block title %}Lista de Clientes{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Gerenciamento de Clientes</h2>
+
+    {# Mensagens do Django (suas mensagens temporárias vão aqui) #}
+    {% if messages %}
+        <div id="django-messages-container" class="mb-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {# Botão para Abrir Modal de Cadastro de Cliente #}
+    {% if user_can_add %}
+    <div class="d-flex justify-content-end mb-3">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#cadastrarClienteModal">
+            <i class="fas fa-plus me-2"></i> Novo Cliente
+        </button>
+    </div>
+    {% endif %}
+
+    {# Formulário de Pesquisa/Filtro (opcional, pode ser mais elaborado depois) #}
+    <form class="mb-4 p-3 border rounded bg-light" method="GET" action="{% url 'listaClientes' %}">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label for="id_filter_nome" class="form-label">Nome:</label>
+                <input type="text" class="form-control" id="id_filter_nome" name="nome" value="{{ request.GET.nome }}">
+            </div>
+            <div class="col-md-4">
+                <label for="id_filter_telefone" class="form-label">Telefone:</label>
+                <input type="text" class="form-control" id="id_filter_telefone" name="telefone" value="{{ request.GET.telefone }}">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-info me-2"><i class="fas fa-search me-2"></i> Buscar</button>
+                <a href="{% url 'listaClientes' %}" class="btn btn-secondary"><i class="fas fa-redo me-2"></i> Limpar</a>
+            </div>
+        </div>
+    </form>
+
+
+    {# Tabela de Clientes #}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>Endereço</th>
+                    <th>Observação</th>
+                    <th>Ativo</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in clientes %}
+                <tr data-cliente-id="{{ cliente.id }}"
+                    data-cliente-nome="{{ cliente.nome }}"
+                    data-cliente-telefone="{{ cliente.telefone|default_if_none:'' }}"
+                    data-cliente-endereco="{{ cliente.endereco|default_if_none:'' }}"
+                    data-cliente-observacao="{{ cliente.observacao|default_if_none:'' }}"
+                    data-cliente-ativo="{{ cliente.ativo|yesno:'true,false' }}">
+                    <td>{{ cliente.nome }}</td>
+                    <td>{{ cliente.telefone|default_if_none:'-' }}</td>
+                    <td>{{ cliente.endereco|default_if_none:'-' }}</td>
+                    <td>{{ cliente.observacao|default_if_none:'-' }}</td>
+                    <td>
+                        {% if cliente.ativo %}
+                            <span class="badge bg-success">Sim</span>
+                        {% else %}
+                            <span class="badge bg-danger">Não</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {# Botões de Ação #}
+                        {% if user_can_edit %}
+                        <button type="button" class="btn btn-sm btn-warning edit-cliente-btn me-2" data-bs-toggle="modal" data-bs-target="#alterarClienteModal">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        {% endif %}
+                        {% if user_can_delete %}
+                        <button type="button" class="btn btn-sm btn-danger delete-cliente-btn" data-bs-toggle="modal" data-bs-target="#confirmDeleteClienteModal">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">Nenhum cliente encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# --- Modais de Clientes (Esqueletos) --- #}
+
+    {# Modal de Cadastro de Cliente #}
+    <div class="modal fade" id="cadastrarClienteModal" tabindex="-1" aria-labelledby="cadastrarClienteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cadastrarClienteModalLabel">Novo Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="cadastrarClienteForm" method="post" action=# > {# action será configurada no próximo passo  action="{% url 'cadastrarClientes' %}"  #}
+                        {% csrf_token %}
+                    <div class="modal-body">
+                        {# Área para exibir erros de validação via JS #}
+                        <div id="cadastroClienteFormErrors" class="alert alert-danger d-none" role="alert"></div>
+                        
+                        {# Renderiza os campos do formulário ClienteForm #}
+                        {% for field in form_cadastro_cliente %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}:</label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Cliente</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {# Modal de Alteração de Cliente (Esqueleto) #}
+    <div class="modal fade" id="alterarClienteModal" tabindex="-1" aria-labelledby="alterarClienteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="alterarClienteModalLabel">Alterar Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="alterarClienteForm" method="post" action=#> {# action será configurada no próximo passo  action="{% url 'alterarClientes' %}" #}
+                    {% csrf_token %}
+                    <input type="hidden" name="cliente_id" id="alterar_cliente_id"> {# Campo oculto para o ID do cliente #}
+                    <div class="modal-body">
+                        {# Área para exibir erros de validação via JS #}
+                        <div id="alterarClienteFormErrors" class="alert alert-danger d-none" role="alert"></div>
+                        
+                        {# Os campos do formulário serão preenchidos via JS #}
+                        {# Use os mesmos campos que você definiu no ClienteForm #}
+                        <div class="mb-3">
+                            <label for="id_nome_alt" class="form-label">Nome Completo:</label>
+                            <input type="text" class="form-control" id="id_nome_alt" name="nome" placeholder="Nome completo do cliente">
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_telefone_alt" class="form-label">Telefone:</label>
+                            <input type="text" class="form-control" id="id_telefone_alt" name="telefone" placeholder="Ex: (XX) XXXX-XXXX">
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_endereco_alt" class="form-label">Endereço:</label>
+                            <input type="text" class="form-control" id="id_endereco_alt" name="endereco" placeholder="Rua, número, bairro, cidade">
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_observacao_alt" class="form-label">Observação:</label>
+                            <textarea class="form-control" id="id_observacao_alt" name="observacao" rows="3" placeholder="Informações adicionais sobre o cliente"></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="id_ativo_alt" name="ativo">
+                            <label class="form-check-label" for="id_ativo_alt">Ativo</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {# Modal de Confirmação de Exclusão (Esqueleto) #}
+    <div class="modal fade" id="confirmDeleteClienteModal" tabindex="-1" aria-labelledby="confirmDeleteClienteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteClienteModalLabel">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Tem certeza de que deseja excluir o cliente "<strong id="clienteToDeleteName"></strong>"? Esta ação não pode ser desfeita.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form id="deleteClienteForm" method="post" action=# > {# A URL será atualizada via JS   action="{% url 'excluir_cliente' 0 %}" #}
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Excluir</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{# Script para mensagens temporárias (copie do seu listar_produtos.html) #}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const messagesContainer = document.getElementById('django-messages-container');
+
+        if (messagesContainer) {
+            const messages = messagesContainer.querySelectorAll('.alert');
+
+            messages.forEach(message => {
+                setTimeout(() => {
+                    message.classList.remove('show');
+                    message.classList.add('fade-out');
+                    setTimeout(() => {
+                        message.remove();
+                    }, 500); // Espera a transição de fade-out
+                }, 10000); // 10 segundos
+            });
+        }
+    });
+</script>
+
+{# Este é o local onde virá o JavaScript específico dos modais de Cliente #}
+{# Ele será implementado no PRÓXIMO PASSO #}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // --- JavaScript para Modal de Alteração de Cliente ---
+        const alterarClienteModal = document.getElementById('alterarClienteModal');
+        const alterarClienteForm = document.getElementById('alterarClienteForm');
+        const alterarClienteFormErrorsDiv = document.getElementById('alterarClienteFormErrors');
+        const alterarClienteIdInput = document.getElementById('alterar_cliente_id');
+        const idNomeAlt = document.getElementById('id_nome_alt');
+        const idTelefoneAlt = document.getElementById('id_telefone_alt');
+        const idEnderecoAlt = document.getElementById('id_endereco_alt');
+        const idObservacaoAlt = document.getElementById('id_observacao_alt');
+        const idAtivoAlt = document.getElementById('id_ativo_alt');
+
+        if (alterarClienteModal) {
+            alterarClienteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget; // Botão que acionou o modal
+                const row = button.closest('tr'); // Pega a linha da tabela
+
+                // Reseta os erros anteriores
+                alterarClienteFormErrorsDiv.innerHTML = '';
+                alterarClienteFormErrorsDiv.classList.add('d-none');
+
+                // Preenche os campos do formulário com os dados da linha
+                alterarClienteIdInput.value = row.dataset.clienteId;
+                idNomeAlt.value = row.dataset.clienteNome;
+                idTelefoneAlt.value = row.dataset.clienteTelefone;
+                idEnderecoAlt.value = row.dataset.clienteEndereco;
+                idObservacaoAlt.value = row.dataset.clienteObservacao;
+                idAtivoAlt.checked = row.dataset.clienteAtivo === 'true'; // Converte string para boolean
+            });
+        }
+
+        // --- JavaScript para Modal de Confirmação de Exclusão ---
+        const confirmDeleteClienteModal = document.getElementById('confirmDeleteClienteModal');
+        if (confirmDeleteClienteModal) {
+            confirmDeleteClienteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const row = button.closest('tr');
+                const clienteId = row.dataset.clienteId;
+                const clienteNome = row.dataset.clienteNome;
+
+                const clienteToDeleteName = document.getElementById('clienteToDeleteName');
+                if (clienteToDeleteName) {
+                    clienteToDeleteName.textContent = clienteNome;
+                }
+
+                // Atualiza a action do formulário de exclusão com o ID correto
+                const deleteClienteForm = document.getElementById('deleteClienteForm');
+                if (deleteClienteForm) {
+                    // A URL 'excluir_cliente' no Django precisa aceitar o ID
+                    // Ex: /pfsj/clientes/excluir/123/
+                    deleteClienteForm.action = `/pfsj/clientes/excluir/${clienteId}/`; 
+                }
+            });
+        }
+    });
+</script>
+
+{% endblock %}
