@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
@@ -167,6 +167,49 @@ def lista_clientes(request):
 
 
 #--------------------------------------------------------------------------------------------------
+@login_required
+@permission_required('pfsj.add_cliente', raise_exception=True) # Requer permissão para adicionar cliente
+@require_POST
+def cadastrar_cliente(request):
+    form = ClienteForm(request.POST)
+    if form.is_valid():
+        form.save()
+        messages.success(request, 'Cliente cadastrado com sucesso!')
+        return JsonResponse({'success': True, 'message': 'Cliente cadastrado com sucesso!'})
+    else:
+        # Se o formulário não for válido, retorna os erros em formato JSON
+        # form.errors contém um dicionário com os erros, por exemplo: {'nome': ['Este campo é obrigatório.']}
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400) # Status 400 para Bad Request
+
+#--------------------------------------------------------------------------------------------------
+@login_required
+@permission_required('pfsj.change_cliente', raise_exception=True) # Requer permissão para alterar cliente
+@require_POST
+def alterar_cliente(request):
+    cliente_id = request.POST.get('cliente_id')
+    cliente = get_object_or_404(Cliente, pk=cliente_id) # Tenta buscar o cliente, ou retorna 404
+    
+    # Instancia o formulário com os dados da requisição e a instância do cliente
+    form = ClienteForm(request.POST, instance=cliente)
+    
+    if form.is_valid():
+        form.save()
+        messages.success(request, 'Cliente alterado com sucesso!')
+        return JsonResponse({'success': True, 'message': 'Cliente alterado com sucesso!'})
+    else:
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+#--------------------------------------------------------------------------------------------------
+@login_required
+@permission_required('pfsj.delete_cliente', raise_exception=True) # Requer permissão para excluir cliente
+@require_POST
+def excluir_cliente(request, id): # Recebe o ID do cliente da URL
+    cliente = get_object_or_404(Cliente, pk=id)
+    cliente.delete() # Exclui o cliente do banco de dados
+    messages.success(request, 'Cliente excluído com sucesso!')
+    return JsonResponse({'success': True, 'message': 'Cliente excluído com sucesso!'})
+
+
 #--------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------
