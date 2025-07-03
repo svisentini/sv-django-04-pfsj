@@ -199,43 +199,93 @@
         var alterarJoiaIdInput = document.getElementById('alterar_joia_id');
         var alterarFormErrorsDiv = document.getElementById('alterarFormErrors');
 
-        var idCodigoAlt = document.getElementById('id_codigo_alt');
-        var idTipoAlt = document.getElementById('id_tipo_alt');
-        var idDescricaoAlt = document.getElementById('id_descricao_alt');
-        var idPrecoCompraAlt = document.getElementById('id_preco_compra_alt');
-        var idPrecoVendaAlt = document.getElementById('id_preco_venda_alt');
-        var idQuantidadeAlt = document.getElementById('id_quantidade_alt');
-        var idFotoAlt = document.getElementById('id_foto_alt');
-        var idAtivoAlt = document.getElementById('id_ativo_alt');
-        var currentFotoPreviewAlt = document.getElementById('current_foto_preview_alt');
+        var idCodigoAlt = document.getElementById('modalAlteracaoCodigo');
+        var idTipoAlt = document.getElementById('modalAlteracaoTipo');
+        var idDescricaoAlt = document.getElementById('modalAlteracaoDescricao');
+        var idPrecoCompraAlt = document.getElementById('modalAlteracaoPrecoCompra');
+        var idPrecoVendaAlt = document.getElementById('modalAlteracaoPrecoVenda');
+        var idQuantidadeAlt = document.getElementById('modalAlteracaoQuantidade');
+        var idFotoAlt = document.getElementById('modalAlteracaoFoto');
+        var idAtivoAlt = document.getElementById('ativo');
+        var currentFotoPreviewAlt = document.getElementById('currentPhotoPreview');
 
         if (alterarJoiaModal) {
             alterarJoiaModal.addEventListener('show.bs.modal', function (event) {
                 var button = event.relatedTarget;
-                var row = button.closest('div.card').closest('div.col-md-3'); // Ajuste aqui para pegar os data-alt da div.col-md-3
+                var joiaId = button.getAttribute("data-alt-id");
+                var codigo = button.getAttribute("data-alt-codigo");
+                var descricao = button.getAttribute("data-alt-descricao");
+                var precoCompra = button.getAttribute("data-alt-preco-compra");
+                var precoVenda = button.getAttribute("data-alt-preco-venda");
+                var quantidade = button.getAttribute("data-alt-quantidade");
+                var fotoUrl = button.getAttribute("data-alt-foto");
+                var tipoId = button.getAttribute("data-alt-tipo");
 
-                // Resetar erros anteriores
+                console.log("Preço de Compra antes:", precoCompra);
+
+
+                if (precoCompra){
+                    precoCompra = String(precoCompra).replace(',','.');
+                }
+                if (precoVenda){
+                    precoVenda = String(precoVenda).replace(",",".");
+                }
+                if (quantidade){
+                    quantidade = String(quantidade);
+                }
+                //console.log("Preço de Compra depois:", precoCompra);
+
+                // Limpa erros anteriores e esconde a div de erro
                 alterarFormErrorsDiv.innerHTML = '';
                 alterarFormErrorsDiv.classList.add('d-none');
+                
+                // Preecher os campos comuns.
+                document.getElementById("modalAlteracaoCodigo").value = codigo;
+                document.getElementById("modalAlteracaoDescricao").value = descricao;
+                document.getElementById("modalAlteracaoPrecoCompra").value = precoCompra;
+                document.getElementById("modalAlteracaoPrecoVenda").value = precoVenda;
+                document.getElementById("modalAlteracaoQuantidade").value = quantidade;
+                
+                var selectTipo = document.getElementById("modalAlteracaoTipo").value = tipoId;
+                
+                // Lidar com a exibição da foto atual
+                var currentPhotoPreview = document.getElementById("currentPhotoPreview");
+                currentPhotoPreview.innerHTML = ''; // Limpa qualquer conteúdo anterior
 
-                // Preenche os campos do formulário com os dados da linha da tabela
-                alterarJoiaIdInput.value = row.dataset.altId;
-                idCodigoAlt.value = row.dataset.altCodigo;
-                idTipoAlt.value = row.dataset.altTipo; // Seleciona o tipo correto no dropdown
-                idDescricaoAlt.value = row.dataset.altDescricao;
-                idPrecoCompraAlt.value = parseFloat(row.dataset.altPrecoCompra).toFixed(2);
-                idPrecoVendaAlt.value = parseFloat(row.dataset.altPrecoVenda).toFixed(2);
-                idQuantidadeAlt.value = parseInt(row.dataset.altQuantidade);
-                idAtivoAlt.checked = row.dataset.altAtivo === 'true'; // 'true' ou 'false' do HTML
+                // Limpa o input de arquivo para garantir que não haja arquivo pré-selecionado do último uso
+                document.getElementById("modalAlteracaoFoto").value = '';
 
-                // Exibe a foto atual
-                if (row.dataset.altFoto && row.dataset.altFoto !== 'None' && row.dataset.altFoto !== '/media/None' && row.dataset.altFoto !== '') {
-                    currentFotoPreviewAlt.innerHTML = `<img src="${row.dataset.altFoto}" alt="Foto Atual" style="max-width: 100px; max-height: 100px; object-fit: contain;">`;
+                // Verifica se existe uma URL de foto válida e a exibe
+                if (fotoUrl && fotoUrl !== 'None' && fotoUrl !== '/media/None' && fotoUrl !== '') {
+                    var img = document.createElement("img");
+                    img.src = fotoUrl;
+                    img.alt = "Foto atual da Joia";
+                    img.style.maxWidth = "150px";
+                    img.style.height = "auto";
+                    img.style.display = "block";
+                    img.style.marginBottom = "10px";
+                    currentPhotoPreview.appendChild(img);
+
+                    // Se você usou o campo hidden para a URL da foto atual
+                    document.getElementById("modalAlteracaoFotoUrl").value = fotoUrl;
                 } else {
-                    currentFotoPreviewAlt.innerHTML = '<p>Nenhuma foto atual.</p>';
+                    currentPhotoPreview.innerHTML = '<p>Nenhuma foto atual.</p>';
+                    //  Se você usou o campo hidden, limpe-o também
+                    document.getElementById("modalAlteracaoFotoUrl").value = '';
                 }
-                 // Limpa o input de arquivo para garantir que não haja arquivo pré-selecionado do último uso
-                idFotoAlt.value = '';
+
+                var hiddenIdInput = document.getElementById("modalAlteracaoJoiaId");
+                if (hiddenIdInput) {
+                    hiddenIdInput.value = joiaId;
+                } else {
+                    var form = altJoiaModal.querySelector('form');
+                    hiddenIdInput = document.createElement('input');
+                    hiddenIdInput.type = 'hidden';
+                    hiddenIdInput.name = 'joia_id';
+                    hiddenIdInput.id = 'modalAlteracaoJoiaId';
+                    hiddenIdInput.value = joiaId;
+                    form.appendChild(hiddenIdInput);
+                }
             });
         }
         
@@ -253,6 +303,9 @@
                 formActionUrl.pathname += '/';
             }
             const finalUrl = formActionUrl.toString();
+
+            console.log("Final URL:", finalUrl);
+            console.log("formData: ", formData.toString());
 
             fetch(finalUrl, {
                 method: 'POST',
@@ -305,14 +358,25 @@
                 var button = event.relatedTarget;
                 var joiaId = button.getAttribute('data-id');
                 var joiaCodigo = button.getAttribute('data-codigo');
-                // var joiaDescricao = button.getAttribute('data-descricao'); // Não utilizado no modal de confirmação
-                // var joiaPreco = button.getAttribute('data-preco'); // Não utilizado no modal de confirmação
+                var joiaDescricao = button.getAttribute('data-descricao'); // Não utilizado no modal de confirmação
+                var joiaPreco = button.getAttribute('data-preco'); // Não utilizado no modal de confirmação
 
-                var joiaToDeleteCodigo = document.getElementById('joiaToDeleteCodigo'); // Ajuste o ID aqui
+                // CODIGO
+                var joiaToDeleteCodigo = document.getElementById('modalCodigo'); // Ajuste o ID aqui
                 if (joiaToDeleteCodigo) {
                     joiaToDeleteCodigo.textContent = joiaCodigo;
                 }
-
+                // DESCRICAO
+                var joiaToDeleteDescricao = document.getElementById('modalDescricao'); // Ajuste o ID aqui
+                if (joiaToDeleteDescricao) {
+                    joiaToDeleteDescricao.textContent = joiaDescricao;
+                }
+                // PRECO
+                var joiaToDeletePreco = document.getElementById('modalPreco'); // Ajuste o ID aqui
+                if (joiaToDeletePreco) {
+                    joiaToDeletePreco.textContent = joiaPreco;
+                }
+                // ACTION
                 var deleteJoiaForm = document.getElementById('deleteForm'); // Ajuste o ID aqui
                 if (deleteJoiaForm) {
                     deleteJoiaForm.action = `/pfsj/joias/excluir/${joiaId}/`; 

@@ -84,7 +84,7 @@ def cadastrar_joia(request):
 def alterar_joia(request):
     print(f"#### DEBUG INÍCIO ALTERAR_JOIA: Request Method is {request.method} ####") 
     if request.method == 'POST':
-        joia_id = request.POST.get('joia_id')
+        joia_id = request.POST.get('alterar_joia_id')
         if not joia_id:
             # Se não houver ID, retorna um erro JSON
             return JsonResponse({'success': False, 'errors': {'__all__': 'ID da joia não fornecido.'}}, status=400)

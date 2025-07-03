@@ -185,7 +185,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Tem certeza de que deseja excluir o cliente "<strong id="clienteToDeleteName"></strong>"? Esta ação não pode ser desfeita.
+                    <p class="text-center">Tem certeza de que deseja excluir este Cliente?</p>
+                    <p><strong>Nome : </strong><span id="clienteToDeleteName"></span></p>
+                    <p><strong>Telefone : </strong><span id="clienteToDeleteTelefone"></span></p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -317,10 +319,16 @@
                 const row = button.closest('tr');
                 const clienteId = row.dataset.clienteId;
                 const clienteNome = row.dataset.clienteNome;
+                const clienteTelefone = row.dataset.clienteTelefone
 
                 const clienteToDeleteName = document.getElementById('clienteToDeleteName');
                 if (clienteToDeleteName) {
                     clienteToDeleteName.textContent = clienteNome;
+                }
+
+                const clienteToDeleteTelefone = document.getElementById('clienteToDeleteTelefone');
+                if (clienteToDeleteTelefone){
+                    clienteToDeleteTelefone.textContent = clienteTelefone;
                 }
 
                 // Atualiza a action do formulário de exclusão com o ID correto

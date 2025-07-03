@@ -10,13 +10,13 @@
                 </div>
                 <div class="modal-body">
 
-                    <div id="formErrors" class="alert alert-danger d-none" role="alert">
+                    <div id="alterarFormErrors" class="alert alert-danger d-none" role="alert">
                     </div>
 
                     <!-- Formulário de Cadastro -->
                     <form id="alterarJoiaForm" method="post" enctype="multipart/form-data" action="{% url 'alterarJoias' %}">
                         {% csrf_token %}
-                        <input type="hidden" name="joia_id" id="modalAlteracaoJoiaId">
+                        <input type="hidden" name="alterar_joia_id" id="modalAlteracaoJoiaId">
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
